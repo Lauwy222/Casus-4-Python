@@ -17,6 +17,10 @@ INITIAL_ANKLE_ANG = 60
 INITIAL_KNEE_ANG = 90
 INITIAL_HIP_ANG = 90
 
+INITIAL_FOOT_LEN = 28
+INITIAL_SHANK_LEN = 50
+INITIAL_THIGH_LEN = 50
+INITIAL_TUNK_LEN = 80
 #%% S3 - Other functions
 # Placeholder section for helper functions (e.g., sind(), cosd()) introduced later.
 
@@ -28,9 +32,6 @@ def calculate_model(*_):
     ankle_ang = ankle_slider.get()
     hip_ang = hip_slider.get()
     knee_ang = knee_slider.get()
-    print(ankle_ang)
-    print(hip_ang)
-    print(knee_ang)
 
     # Subsection: clear and rebuild the plot
     figure1.clear()
@@ -112,6 +113,11 @@ hip_slider = tk.Scale(
 )
 hip_slider.set(INITIAL_HIP_ANG)
 hip_slider.config(command=calculate_model)
+
+foot_var = tk.DoubleVar(value=INITIAL_FOOT_LEN)
+foot_entry = tk.Entry(master=root, width=4, textvariable=foot_var)
+foot_entry.bind('<return>', calculate_model())
+foot_lbl = tk.Label(root, text="Foot length")
 #%% S6 - Place GUI elements
 # Subsection: plot placement
 canvas_widget.pack(side="right", fill="y")
