@@ -22,11 +22,7 @@ INITIAL_HIP_ANG = 90
 
 #%% S4 - Model calculation and plotting
 def calculate_model(*_):
-    """
-    Callback function for GUI changes.
-    At this stage it only redraws an empty plot area to confirm that the GUI
-    triggers this function correctly.
-    """
+    print("Slider moved")
 
     # Subsection: read current GUI state
     ankle_ang = ankle_slider.get()
@@ -39,9 +35,6 @@ def calculate_model(*_):
     ax1.set_xlim(0, 1)
     ax1.set_ylim(0, 1)
     ax1.set_aspect("equal", adjustable="box")
-
-    # Subsection: diagnostic output in the figure (temporary for page 3)
-    ax1.set_title(f"Ankle angle = {ankle_ang}°")
 
     # Subsection: redraw canvas
     canvas.draw()
