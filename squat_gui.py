@@ -26,6 +26,11 @@ def calculate_model(*_):
 
     # Subsection: read current GUI state
     ankle_ang = ankle_slider.get()
+    hip_ang = hip_slider.get()
+    knee_ang = knee_slider.get()
+    print(ankle_ang)
+    print(hip_ang)
+    print(knee_ang)
 
     # Subsection: clear and rebuild the plot
     figure1.clear()
@@ -38,6 +43,8 @@ def calculate_model(*_):
 
     # Subsection: redraw canvas
     canvas.draw()
+    
+    
 
 #%% S5 - Create GUI elements
 # Subsection: main window
@@ -78,6 +85,33 @@ ankle_slider = tk.Scale(
 )
 ankle_slider.set(INITIAL_ANKLE_ANG)
 
+# Subsection: knee slider
+knee_slider = tk.Scale(
+    master=root,
+    from_=10,
+    to=180,
+    label="Knee angle",
+    resolution=1,
+    length=200,
+    orient="horizontal",
+    command=calculate_model
+)
+knee_slider.set(INITIAL_KNEE_ANG)
+knee_slider.config(command=calculate_model)
+
+# Subsection: hip slider
+hip_slider = tk.Scale(
+    master=root,
+    from_=30,
+    to=180,
+    label="Hip angle",
+    resolution=1,
+    length=200,
+    orient="horizontal",
+    command=calculate_model
+)
+hip_slider.set(INITIAL_HIP_ANG)
+hip_slider.config(command=calculate_model)
 #%% S6 - Place GUI elements
 # Subsection: plot placement
 canvas_widget.pack(side="right", fill="y")
@@ -85,6 +119,8 @@ canvas_widget.pack(side="right", fill="y")
 # Subsection: left-side controls placement (top-to-bottom order)
 pict_lbl.pack(side="top", pady=10)
 ankle_slider.pack(side="bottom", pady=(10, 60))
+knee_slider.pack(side="bottom", pady=(5, 60))
+hip_slider.pack(side="bottom", pady=(0, 60))
 
 # Subsection: initial draw
 calculate_model()
