@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Squat GUI - page 7 state
+Squat GUI - page 7/8 state
 This script contains:
 - 3 sliders (ankle, knee, hip) connected to calculate_model()
 - 4 Entry widgets (foot, shank, thigh, trunk) using tk.DoubleVar
-- Proper event binding: pressing Enter in an Entry triggers calculate_model()
+- Page 8: foot geometry (heel, toe, ankle) plotted as blue line segments
 """
 
 #%% S1 - Libraries
@@ -23,14 +23,18 @@ INITIAL_FOOT_LEN = 28.0
 INITIAL_SHANK_LEN = 50.0
 INITIAL_THIGH_LEN = 50.0
 INITIAL_TRUNK_LEN = 80.0
-toe = [0,0]
 
 #%% S3 - Other functions
 # Placeholder for helper functions introduced later (e.g., sind(), cosd()).
 
 #%% S4 - Model calculation and plotting
-def calculate_model(*_):    
-    # Subsection: read joint angles from sliders
+def calculate_model(*_):
+    """
+    Central callback function for GUI updates.
+    Page 8: compute and draw the foot (heel, toe, ankle).
+    """
+
+    # Subsection: read joint angles from sliders (not used yet on page 8)
     ankle_ang = ankle_slider.get()
     knee_ang = knee_slider.get()
     hip_ang = hip_slider.get()
@@ -41,24 +45,40 @@ def calculate_model(*_):
     thigh_len = thigh_var.get()
     trunk_len = trunk_var.get()
 
+    # Subsection: compute foot key points (page 8)
     heel = np.array([0.0, 0.0])
-    toe = np.array([
-    heel[0] + foot_len,0.0
-])
-    ankle = np.array([
-    heel[0] + foot_len / 5,heel[1] + foot_len / 4
-])
 
+    toe = np.array([
+        heel[0] + foot_len,
+        0.0
+    ])
+
+    ankle = np.array([
+        heel[0] + foot_len / 5.0,
+        heel[1] + foot_len / 4.0
+    ])
 
     # Subsection: clear and rebuild the plot area
     figure1.clear()
     ax1 = figure1.add_subplot(1, 1, 1)
 
-    # Subsection: keep a visible reserved plot area (temporary for early stages)
-    ax1.set_xlim(0, 1)
-    ax1.set_ylim(0, 1)
+    # Subsection: draw foot as blue line segments
+    # Segment 1: heel -> toe (sole)
+    ax1.plot([heel[0], toe[0]], [heel[1], toe[1]], "b-")
+
+    # Segment 2: heel -> ankle
+    ax1.plot([heel[0], ankle[0]], [heel[1], ankle[1]], "b-")
+
+    # Segment 3: ankle -> toe
+    ax1.plot([ankle[0], toe[0]], [ankle[1], toe[1]], "b-")
+
+    # Subsection: axis limits and aspect ratio
+    # Use limits that make the foot visible for typical foot lengths
+    ax1.set_xlim(-75, 100)
+    ax1.set_ylim(-10, 200)
     ax1.set_aspect("equal", adjustable="box")
 
+    # Subsection: redraw canvas
     canvas.draw()
 
 #%% S5 - Create GUI elements
@@ -86,7 +106,6 @@ except tk.TclError:
     pict_lbl = tk.Label(master=root, text="(logo not found)")
 
 # Subsection: sliders
-# Ankle slider can safely attach command immediately
 ankle_slider = tk.Scale(
     master=root,
     from_=30,
@@ -99,7 +118,6 @@ ankle_slider = tk.Scale(
 )
 ankle_slider.set(INITIAL_ANKLE_ANG)
 
-# Knee slider: attach command only after set() to prevent extra redraw at startup
 knee_slider = tk.Scale(
     master=root,
     from_=10,
@@ -112,7 +130,6 @@ knee_slider = tk.Scale(
 knee_slider.set(INITIAL_KNEE_ANG)
 knee_slider.config(command=calculate_model)
 
-# Hip slider: attach command only after set() to prevent extra redraw at startup
 hip_slider = tk.Scale(
     master=root,
     from_=30,
@@ -147,13 +164,10 @@ trunk_entry.bind("<Return>", calculate_model)
 trunk_lbl = tk.Label(master=root, text="Trunk length")
 
 #%% S6 - Place GUI elements
-# Subsection: plot placement
 canvas_widget.pack(side="right", fill="y")
 
-# Subsection: left-side placement (top-to-bottom)
 pict_lbl.pack(side="top", pady=5)
 
-# Entries and labels (label above entry)
 foot_lbl.pack(side="top", pady=(10, 0))
 foot_entry.pack(side="top", pady=(0, 5))
 
@@ -166,10 +180,9 @@ thigh_entry.pack(side="top", pady=(0, 5))
 trunk_lbl.pack(side="top", pady=(10, 0))
 trunk_entry.pack(side="top", pady=(0, 5))
 
-# Sliders at the bottom (packing bottom gives correct visual order)
-ankle_slider.pack(side="bottom", pady=(10, 30))
-knee_slider.pack(side="bottom", pady=5)
 hip_slider.pack(side="bottom", pady=5)
+knee_slider.pack(side="bottom", pady=5)
+ankle_slider.pack(side="bottom", pady=(10, 30))
 
 # Subsection: initial draw
 calculate_model()
