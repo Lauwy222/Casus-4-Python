@@ -55,12 +55,6 @@ def calculate_model(*_):
     ax1.set_ylim(0, 1)
     ax1.set_aspect("equal", adjustable="box")
 
-    # Subsection: optional diagnostic text inside the plot
-    ax1.set_title(
-        f"A:{ankle_ang:.0f}  K:{knee_ang:.0f}  H:{hip_ang:.0f} | "
-        f"F:{foot_len:.1f} S:{shank_len:.1f} T:{thigh_len:.1f} Tr:{trunk_len:.1f}"
-    )
-
     canvas.draw()
 
 #%% S5 - Create GUI elements
