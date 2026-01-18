@@ -13,6 +13,7 @@ import tkinter as tk
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy as np
+import math
 
 #%% S2 - Initial values / constants
 INITIAL_ANKLE_ANG = 60
@@ -25,8 +26,12 @@ INITIAL_THIGH_LEN = 50.0
 INITIAL_TRUNK_LEN = 80.0
 
 #%% S3 - Other functions
-# Placeholder for helper functions introduced later (e.g., sind(), cosd()).
-
+def sind(angle_deg):
+    angle_rad=(angle_deg*(np.pi*180))
+    return np.sin(angle_rad)
+def cosd(angle_deg):
+    angle_rad=(angle_deg*(np.pi*180))
+    return np.cos(angle_rad)
 #%% S4 - Model calculation and plotting
 def calculate_model(*_):
     """
@@ -57,6 +62,10 @@ def calculate_model(*_):
         heel[0] + foot_len / 5.0,
         heel[1] + foot_len / 4.0
     ])
+    
+    # Subsection: Calc dist_x leg
+    dist_x =  cosd(ankle_ang)*shank_len
+    
 
     # Subsection: clear and rebuild the plot area
     figure1.clear()
