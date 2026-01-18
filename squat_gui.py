@@ -32,7 +32,8 @@ def calculate_model(*_):
     ankle_ang = ankle_slider.get()
     hip_ang = hip_slider.get()
     knee_ang = knee_slider.get()
-
+    foot_len = foot_var.get()
+    
     # Subsection: clear and rebuild the plot
     figure1.clear()
     ax1 = figure1.add_subplot(1, 1, 1)
@@ -114,6 +115,7 @@ hip_slider = tk.Scale(
 hip_slider.set(INITIAL_HIP_ANG)
 hip_slider.config(command=calculate_model)
 
+# Subsection: Foot length
 foot_var = tk.DoubleVar(value=INITIAL_FOOT_LEN)
 foot_entry = tk.Entry(master=root, width=4, textvariable=foot_var)
 foot_entry.bind('<return>', calculate_model())
@@ -127,6 +129,10 @@ pict_lbl.pack(side="top", pady=10)
 ankle_slider.pack(side="bottom", pady=(10, 60))
 knee_slider.pack(side="bottom", pady=(5, 60))
 hip_slider.pack(side="bottom", pady=(0, 60))
+
+# Subsection: Entry foot
+foot_entry.pack(side="bottom",pady=10)
+foot_lbl.pack(side="bottom")
 
 # Subsection: initial draw
 calculate_model()
