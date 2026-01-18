@@ -23,18 +23,13 @@ INITIAL_FOOT_LEN = 28.0
 INITIAL_SHANK_LEN = 50.0
 INITIAL_THIGH_LEN = 50.0
 INITIAL_TRUNK_LEN = 80.0
+toe = [0,0]
 
 #%% S3 - Other functions
 # Placeholder for helper functions introduced later (e.g., sind(), cosd()).
 
 #%% S4 - Model calculation and plotting
-def calculate_model(*_):
-    """
-    Central callback function for GUI updates.
-    It reads current GUI values and redraws the plot area.
-    The *_ argument absorbs unused callback parameters (e.g., Tkinter event object).
-    """
-
+def calculate_model(*_):    
     # Subsection: read joint angles from sliders
     ankle_ang = ankle_slider.get()
     knee_ang = knee_slider.get()
@@ -45,6 +40,15 @@ def calculate_model(*_):
     shank_len = shank_var.get()
     thigh_len = thigh_var.get()
     trunk_len = trunk_var.get()
+
+    heel = np.array([0.0, 0.0])
+    toe = np.array([
+    heel[0] + foot_len,0.0
+])
+    ankle = np.array([
+    heel[0] + foot_len / 5,heel[1] + foot_len / 4
+])
+
 
     # Subsection: clear and rebuild the plot area
     figure1.clear()
