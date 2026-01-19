@@ -23,6 +23,25 @@ TRUNK_POS = 0.300
 # Head drawing
 HEAD_RADIUS = 11.0
 
+# Mass percentages (from the table in the handout), converted to fractions
+# Note:
+# - Our model has one leg representing two legs => leg segment fractions multiplied by 2
+# - Trunk and arms are combined; arms exist twice (left+right) => arm fractions multiplied by 2
+MALE = {
+    "head": 0.0896,
+    "trunk_arms": 0.4684 + 2.0 * (0.0325 + 0.0187 + 0.0065),
+    "thigh": 2.0 * 0.1050,
+    "shank": 2.0 * 0.0475,
+    "foot": 2.0 * 0.0143,
+}
+FEMALE = {
+    "head": 0.0820,
+    "trunk_arms": 0.4500 + 2.0 * (0.0290 + 0.0157 + 0.0050),
+    "thigh": 2.0 * 0.1175,
+    "shank": 2.0 * 0.0535,
+    "foot": 2.0 * 0.0133,
+}
+
 #%% S3 - Other functions
 def sind(angle_deg):
     """Return sine of an angle given in degrees (uses numpy)."""
@@ -39,13 +58,13 @@ def calculate_model(*_):
     knee_ang = knee_slider.get()
     hip_ang = hip_slider.get()
 
-    # Subsection: read segment lengths (numeric floats)
+    # Subsection: read segment lengths (floats)
     foot_len = foot_var.get()
     shank_len = shank_var.get()
     thigh_len = thigh_var.get()
     trunk_len = trunk_var.get()
 
-    # Subsection: compute foot key points (page 8)
+    # Subsection: compute body key points (forward kinematics)
     heel = np.array([0.0, 0.0])
 
     toe = np.array([
@@ -58,25 +77,28 @@ def calculate_model(*_):
         heel[1] + foot_len / 4.0
     ])
 
-    # Subsection: shank (ankle -> knee) (page 9)
-    dist_x_shank = cosd(ankle_ang) * shank_len
-    dist_y_shank = sind(ankle_ang) * shank_len
-    knee = ankle + np.array([dist_x_shank, dist_y_shank])
+    # Shank (ankle -> knee)
+    knee = ankle + np.array([
+        cosd(ankle_ang) * shank_len,
+        sind(ankle_ang) * shank_len
+    ])
 
-    # Subsection: thigh (knee -> hip) (page 11–12)
+    # Thigh (knee -> hip)
     thigh_ang = 180.0 - (knee_ang - ankle_ang)
-    dist_x_thigh = cosd(thigh_ang) * thigh_len
-    dist_y_thigh = sind(thigh_ang) * thigh_len
-    hip = knee + np.array([dist_x_thigh, dist_y_thigh])
+    hip = knee + np.array([
+        cosd(thigh_ang) * thigh_len,
+        sind(thigh_ang) * thigh_len
+    ])
 
-    # Subsection: trunk (hip -> head) (page 13)
+    # Trunk (hip -> head)
     purple_ang = knee_ang - ankle_ang
     trunk_ang = hip_ang - purple_ang
-    dist_x_trunk = cosd(trunk_ang) * trunk_len
-    dist_y_trunk = sind(trunk_ang) * trunk_len
-    head = hip + np.array([dist_x_trunk, dist_y_trunk])
+    head = hip + np.array([
+        cosd(trunk_ang) * trunk_len,
+        sind(trunk_ang) * trunk_len
+    ])
 
-    # Subsection: head circle (page 13)
+    # Subsection: head circle
     head_circle = plt.Circle(
         (head[0], head[1]),
         radius=HEAD_RADIUS,
@@ -85,34 +107,65 @@ def calculate_model(*_):
         zorder=2
     )
 
-    # Subsection: segment COM points (page 14–15)
-    # Foot COM: 1/3 of foot length in x, 1/3 of foot height in y
+    # Subsection: segment COM points
+    # Foot COM: x at 1/3 of foot length from heel, y at 1/3 of foot height
     foot_height = foot_len / 4.0
     cm_foot = np.array([
         heel[0] + foot_len / 3.0,
         heel[1] + foot_height / 3.0
     ])
 
-    # Shank COM: from distal end (ankle) along shank direction
+    # Shank COM from distal end (ankle) along shank direction
     cm_shank = ankle + np.array([
         cosd(ankle_ang) * shank_len * SHANK_POS,
         sind(ankle_ang) * shank_len * SHANK_POS
     ])
 
-    # Thigh COM: from distal end (knee) along thigh direction
+    # Thigh COM from distal end (knee) along thigh direction
     cm_thigh = knee + np.array([
         cosd(thigh_ang) * thigh_len * THIGH_POS,
         sind(thigh_ang) * thigh_len * THIGH_POS
     ])
 
-    # Trunk COM: from distal end (hip) along trunk direction
+    # Trunk COM from distal end (hip) along trunk direction
     cm_trunk = hip + np.array([
         cosd(trunk_ang) * trunk_len * TRUNK_POS,
         sind(trunk_ang) * trunk_len * TRUNK_POS
     ])
 
-    # Head COM: use head point (end of trunk)
+    # Head COM: use head point
     cm_head = head.copy()
+
+    # Subsection: select mass fractions (male/female)
+    if radio_var.get() == 1:
+        mf = MALE
+    else:
+        mf = FEMALE
+
+    # Subsection: whole-body COM (weighted average)
+    total_mass_frac = mf["foot"] + mf["shank"] + mf["thigh"] + mf["trunk_arms"] + mf["head"]
+    cm_body = (
+        mf["foot"] * cm_foot
+        + mf["shank"] * cm_shank
+        + mf["thigh"] * cm_thigh
+        + mf["trunk_arms"] * cm_trunk
+        + mf["head"] * cm_head
+    ) / total_mass_frac
+
+    # Subsection: update coordinate label text
+    txt = f"x = {cm_body[0]:.2f}\ny = {cm_body[1]:.2f}"
+    cmval_lbl.config(text=txt)
+
+    # Subsection: balance / fall detection (label background color)
+    # green: between ankle and toe
+    # orange: behind ankle but in front of heel
+    # red: outside support area
+    if (cm_body[0] > ankle[0]) and (cm_body[0] < toe[0]):
+        cmval_lbl.config(bg="#b6f2b6")  # light green
+    elif (cm_body[0] < ankle[0]) and (cm_body[0] > heel[0]):
+        cmval_lbl.config(bg="#ffcc99")  # orange
+    else:
+        cmval_lbl.config(bg="#ff9999")  # light red
 
     # Subsection: draw
     figure1.clear()
@@ -128,7 +181,7 @@ def calculate_model(*_):
     ax1.plot([knee[0], hip[0]],   [knee[1], hip[1]],   "b-")  # knee -> hip
     ax1.plot([hip[0], head[0]],   [hip[1], head[1]],   "b-")  # hip -> head
 
-    # Head circle
+    # Head circle (draw before plotting cm_head dot so the red dot stays visible on top)
     ax1.add_artist(head_circle)
 
     # Segment COM points (red)
@@ -138,7 +191,13 @@ def calculate_model(*_):
     ax1.plot(cm_trunk[0], cm_trunk[1], "ro", zorder=3)
     ax1.plot(cm_head[0],  cm_head[1],  "ro", zorder=3)
 
-    # Plot formatting (same view as the handout)
+    # Whole-body COM (red dot, markersize 5)
+    ax1.plot(cm_body[0], cm_body[1], "ro", markersize=5, zorder=4)
+
+    # Vertical projection line from cm_body to x-axis (red dashed)
+    ax1.plot([cm_body[0], cm_body[0]], [0.0, cm_body[1]], "r--", zorder=1)
+
+    # Plot formatting
     ax1.set_xlim(-75, 100)
     ax1.set_ylim(-10, 200)
     ax1.set_aspect("equal", adjustable="box")
@@ -225,29 +284,35 @@ trunk_entry = tk.Entry(master=root, width=6, textvariable=trunk_var)
 trunk_entry.bind("<Return>", calculate_model)
 trunk_lbl = tk.Label(master=root, text="Trunk length")
 
-# Radiobuttons (page 16)
+# Radiobuttons (male/female)
 radio_var = tk.IntVar(value=1)  # 1 = male, 2 = female
-radio_frame = tk.Frame(master=root)
+radio_frame = tk.Frame(master=root, width=300, height=30)
 
 male_radio = tk.Radiobutton(
-    master=radio_frame,
-    text="Male",
-    variable=radio_var,
-    value=1,
-    command=calculate_model
+    master=radio_frame, text="Male", variable=radio_var, value=1, command=calculate_model
 )
 female_radio = tk.Radiobutton(
-    master=radio_frame,
-    text="Female",
-    variable=radio_var,
-    value=2,
-    command=calculate_model
+    master=radio_frame, text="Female", variable=radio_var, value=2, command=calculate_model
 )
+
+# Labels to show cm_body coordinates
+cmtxt_lbl = tk.Label(master=root, text="Body COM (cm_body)")
+cmval_lbl = tk.Label(master=root, text="x = 0.00\ny = 0.00", bg="white", width=12, justify="left")
 
 #%% S6 - Place GUI elements
 canvas_widget.pack(side="right", fill="y")
 
+# Left side (top-to-bottom)
 pict_lbl.pack(side="top", pady=5)
+
+# Body COM labels (must be under logo, above entries)
+cmtxt_lbl.pack(side="top", pady=(5, 0))
+cmval_lbl.pack(side="top", pady=(0, 8))
+
+# Radiobuttons
+radio_frame.pack(side="top", pady=5)
+male_radio.pack(side="left")
+female_radio.pack(side="left")
 
 # Entries + labels (label above entry)
 foot_lbl.pack(side="top", pady=(10, 0))
@@ -261,11 +326,6 @@ thigh_entry.pack(side="top", pady=(0, 5))
 
 trunk_lbl.pack(side="top", pady=(10, 0))
 trunk_entry.pack(side="top", pady=(0, 5))
-
-# Radiobutton frame (page 16 placement)
-radio_frame.pack(side="top", pady=5)
-male_radio.pack(side="left")
-female_radio.pack(side="left")
 
 # Sliders at the bottom
 hip_slider.pack(side="bottom", pady=5)
