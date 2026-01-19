@@ -67,6 +67,9 @@ def calculate_model(*_):
     # Subsection: Calc kneepoint    
     knee = ankle + np.array([dist_x, dist_y])
     
+    # Subsection: Calc Thigh angle
+    thigh_ang = 180-(knee_ang-ankle_ang)
+    
     # Subsection: clear and rebuild the plot area
     figure1.clear()
     ax1 = figure1.add_subplot(1, 1, 1)
