@@ -13,7 +13,6 @@ import tkinter as tk
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy as np
-import math
 
 #%% S2 - Initial values / constants
 INITIAL_ANKLE_ANG = 60
@@ -26,12 +25,13 @@ INITIAL_THIGH_LEN = 50.0
 INITIAL_TRUNK_LEN = 80.0
 
 #%% S3 - Other functions
+#%% S3 - Other functions
 def sind(angle_deg):
-    angle_rad=(angle_deg*(np.pi*180))
-    return np.sin(angle_rad)
+   return np.sin(np.deg2rad(angle_deg))
+
 def cosd(angle_deg):
-    angle_rad=(angle_deg*(np.pi*180))
-    return np.cos(angle_rad)
+    return np.cos(np.deg2rad(angle_deg))
+
 #%% S4 - Model calculation and plotting
 def calculate_model(*_):
     """
@@ -66,7 +66,12 @@ def calculate_model(*_):
     # Subsection: Calc dist_x leg
     dist_x =  cosd(ankle_ang)*shank_len
     
-
+    # Subsection: Calc dist_y leg
+    dist_y = sind(ankle_ang) * shank_len
+    
+    # Subsection: Calc kneepoint    
+    knee = ankle + np.array([dist_x, dist_y])
+    
     # Subsection: clear and rebuild the plot area
     figure1.clear()
     ax1 = figure1.add_subplot(1, 1, 1)
@@ -80,6 +85,9 @@ def calculate_model(*_):
 
     # Segment 3: ankle -> toe
     ax1.plot([ankle[0], toe[0]], [ankle[1], toe[1]], "b-")
+    
+    # Segment 4: Ankle -> Knee
+    ax1.plot([ankle[0], knee[0]], [ankle[1], knee[1]], "b-")
 
     # Subsection: axis limits and aspect ratio
     # Use limits that make the foot visible for typical foot lengths
