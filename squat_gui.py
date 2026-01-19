@@ -34,11 +34,6 @@ def cosd(angle_deg):
 
 #%% S4 - Model calculation and plotting
 def calculate_model(*_):
-    """
-    Central callback function for GUI updates.
-    Page 8: compute and draw the foot (heel, toe, ankle).
-    """
-
     # Subsection: read joint angles from sliders (not used yet on page 8)
     ankle_ang = ankle_slider.get()
     knee_ang = knee_slider.get()
