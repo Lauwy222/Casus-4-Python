@@ -76,6 +76,21 @@ def calculate_model(*_):
     
     # Subsection: Hip position
     hip = knee + np.array([dist_x_thigh, dist_y_thigh])
+    
+    # Subsection: trunk (hip -> head)
+
+    # Shared relative angle used in the handout diagrams
+    purple_ang = knee_ang - ankle_ang
+
+    # Absolute trunk angle with respect to the positive x-axis
+    trunk_ang = hip_ang - purple_ang
+
+    # Trunk segment components
+    dist_x_trunk = cosd(trunk_ang) * trunk_len
+    dist_y_trunk = sind(trunk_ang) * trunk_len
+
+    # Head point (end of trunk)
+    head = hip + np.array([dist_x_trunk, dist_y_trunk])
 
     # Subsection: clear and rebuild the plot area
     figure1.clear()
@@ -96,6 +111,9 @@ def calculate_model(*_):
     
     # Segent 5: Plot thigh as a blue line
     ax1.plot([knee[0], hip[0]], [knee[1], hip[1]], "b-")
+
+    # Segmment 6: Plot trunk as a blue line
+    ax1.plot([hip[0], head[0]], [hip[1], head[1]], "b-")
 
     # Subsection: axis limits and aspect ratio
     # Use limits that make the foot visible for typical foot lengths
