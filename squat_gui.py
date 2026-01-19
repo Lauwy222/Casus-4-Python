@@ -70,6 +70,13 @@ def calculate_model(*_):
     # Subsection: Calc Thigh angle
     thigh_ang = 180-(knee_ang-ankle_ang)
     
+    # Subsection: Thigh segment components
+    dist_x_thigh = cosd(thigh_ang) * thigh_len
+    dist_y_thigh = sind(thigh_ang) * thigh_len
+    
+    # Subsection: Hip position
+    hip = knee + np.array([dist_x_thigh, dist_y_thigh])
+
     # Subsection: clear and rebuild the plot area
     figure1.clear()
     ax1 = figure1.add_subplot(1, 1, 1)
@@ -86,6 +93,9 @@ def calculate_model(*_):
     
     # Segment 4: Ankle -> Knee
     ax1.plot([ankle[0], knee[0]], [ankle[1], knee[1]], "b-")
+    
+    # Segent 5: Plot thigh as a blue line
+    ax1.plot([knee[0], hip[0]], [knee[1], hip[1]], "b-")
 
     # Subsection: axis limits and aspect ratio
     # Use limits that make the foot visible for typical foot lengths
