@@ -91,6 +91,9 @@ def calculate_model(*_):
 
     # Head point (end of trunk)
     head = hip + np.array([dist_x_trunk, dist_y_trunk])
+    
+    # Head circle
+    head_circle = plt.Circle((head[0],head[1]), radius=11, edgecolor="blue", facecolor="white",zorder=2)
 
     # Subsection: clear and rebuild the plot area
     figure1.clear()
@@ -114,6 +117,9 @@ def calculate_model(*_):
 
     # Segmment 6: Plot trunk as a blue line
     ax1.plot([hip[0], head[0]], [hip[1], head[1]], "b-")
+    
+    # Segment 7: Plot head
+    ax1.add_artist(head_circle)
 
     # Subsection: axis limits and aspect ratio
     # Use limits that make the foot visible for typical foot lengths
